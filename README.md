@@ -9,7 +9,9 @@ chmod +x install.sh
 ```
 to run the script do
 
-`./install.sh`
+```
+./install.sh
+```
 
 ## Sources
 
