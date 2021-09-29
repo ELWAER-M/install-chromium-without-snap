@@ -1,26 +1,34 @@
 #!/bin/sh
-sudo apt remove chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
-echo "deb http://deb.debian.org/debian buster main
-deb http://deb.debian.org/debian buster-updates main
-deb http://deb.debian.org/debian-security buster/updates main" > /etc/apt/sources.list.d/debian.list
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DCC9EFBF77E11517
+sudo apt -y remove chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg-extra
+cat <<EOF >/etc/apt/sources.list.d/debian.list
+deb http://ftp.debian.org/debian unstable main contrib non-free
+EOF
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AA8E81B4331F7F50
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 112695A0E562B32A
-echo "# Note: 2 blank lines are required between entries
+cat <<EOF >/etc/apt/preferences.d/chromium.pref
 Package: *
-Pin: release a=eoan
+Pin: release o=Ubuntu
 Pin-Priority: 500
 
 Package: *
-Pin: origin "ftp.debian.org"
+Pin: release o=Debian
 Pin-Priority: 300
 
-# Pattern includes 'chromium', 'chromium-browser' and similarly
-# named dependencies:
-Package: chromium*
-Pin: origin "ftp.debian.org"
-Pin-Priority: 700" > /etc/apt/preferences.d/chromium.pref
-sudo apt update
-sudo apt install chromium -y
+# Pattern includes 'chromium', 'chromium-browser' and similarly named
+# dependencies, and the Debian ffmpeg packages that conflict with the Ubuntu
+# versions.
+Package: chromium*, libavcodec*, libavformat*, libavutil*, libwebpmux*
+Pin: release o=Debian
+Pin-Priority: 700
+EOF
+
+sudo apt -y update
+sudo apt -y -t unstable install chromium chromium-sandbox chromium-l10n chromium-shell chromium-driver libavcodec58 libavformat58 libavutil56
+
+# Add --no-sandbox option to .desktop file, sandbox does not work with proot.
+sed -e 's,^Exec=/usr/bin/chromium ,Exec=/usr/bin/chromium --no-sandbox ,' /usr/share/applications/chromium.desktop \
+	> ~/.local/share/applications/chromium.desktop
+
+update-desktop-database >/dev/null 2>&1
+
 echo "Ok Done :v"
