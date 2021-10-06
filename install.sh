@@ -17,18 +17,21 @@ Pin-Priority: 300
 # Pattern includes 'chromium', 'chromium-browser' and similarly named
 # dependencies, and the Debian ffmpeg packages that conflict with the Ubuntu
 # versions.
-Package: chromium*, libavcodec*, libavformat*, libavutil*, libwebpmux*
+Package: chromium* src:ffmpeg*
 Pin: release o=Debian
 Pin-Priority: 700
 EOF
 
 sudo apt -y update
-sudo apt -y -t unstable install chromium chromium-sandbox chromium-l10n chromium-shell chromium-driver libavcodec58 libavformat58 libavutil56
+sudo apt -y -t unstable install chromium chromium-sandbox chromium-l10n chromium-shell chromium-driver
 
-# Add --no-sandbox option to .desktop file, sandbox does not work with proot.
-sed -e 's,^Exec=/usr/bin/chromium ,Exec=/usr/bin/chromium --no-sandbox ,' /usr/share/applications/chromium.desktop \
-	> ~/.local/share/applications/chromium.desktop
+# Add --no-sandbox option to .desktop file for Termux, sandbox does not work
+# with proot.
+if [ -n "$ANDROID_ROOT" ]; then
+	sed -e 's,^Exec=/usr/bin/chromium ,& --no-sandbox ,' /usr/share/applications/chromium.desktop \
+		> ~/.local/share/applications/chromium.desktop
 
-update-desktop-database >/dev/null 2>&1
+	update-desktop-database >/dev/null 2>&1
+fi
 
 echo "Ok Done :v"
