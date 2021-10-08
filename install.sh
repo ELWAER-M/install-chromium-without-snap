@@ -28,6 +28,7 @@ sudo apt -y -t unstable install chromium chromium-sandbox chromium-l10n chromium
 # Add --no-sandbox option to .desktop file for Termux, sandbox does not work
 # with proot.
 if [ -n "$ANDROID_ROOT" ]; then
+	mkdir -p ~/.local/share/applications
 	sed -e 's,^Exec=/usr/bin/chromium ,& --no-sandbox ,' /usr/share/applications/chromium.desktop \
 		> ~/.local/share/applications/chromium.desktop
 
